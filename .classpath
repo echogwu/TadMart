@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="inventory/src"/>
+	<classpathentry kind="src" path="inventory/runtime-src"/>
+	<classpathentry kind="src" path="order/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7 [1.7.0_79]">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v7.0">
+		<attributes>
+			<attribute name="owner.project.facets" value="jst.web"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSOrdersJavaClientLibrary-2013-09-01/dist/commons-codec-1.6.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSOrdersJavaClientLibrary-2013-09-01/dist/commons-logging-api-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSOrdersJavaClientLibrary-2013-09-01/dist/httpclient-4.2.3.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSOrdersJavaClientLibrary-2013-09-01/dist/httpcore-4.2.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSOrdersJavaClientLibrary-2013-09-01/dist/MWSClientJavaRuntime-1.0.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSOrdersJavaClientLibrary-2013-09-01/dist/MWSOrders_2013-09-01_v2015-09-24.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSFulfillmentInventoryJavaClientLibrary-2010-10-01/dist/commons-codec-1.6.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSFulfillmentInventoryJavaClientLibrary-2010-10-01/dist/commons-logging-api-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSFulfillmentInventoryJavaClientLibrary-2010-10-01/dist/FulfillmentInventory_2010-10-01_v2014-09-30.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSFulfillmentInventoryJavaClientLibrary-2010-10-01/dist/httpclient-4.2.3.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSFulfillmentInventoryJavaClientLibrary-2010-10-01/dist/httpcore-4.2.jar"/>
+	<classpathentry kind="lib" path="/Users/Echo/Documents/TadMart/MWSFulfillmentInventoryJavaClientLibrary-2010-10-01/dist/MWSClientJavaRuntime-1.0.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>
