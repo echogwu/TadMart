@@ -41,7 +41,7 @@ def getSupply(id):
         abort(404)
     return jsonify(supply=supply.serialize())
 
-@app.route('/inventory/<int:id>/edit', methods=['Get', 'PUT'])
+@app.route('/inventory/<int:id>/edit', methods=['PUT'])
 #@login_required
 def editInventory(id):
     supply = Inventory.query.filter_by(id=id).first()
@@ -73,7 +73,7 @@ def lastInventory():
         abort(404)
     return jsonify(inventory = inventory[-1].serialize())
 
-@app.route('/inventory/add', methods=['GET','POST'])
+@app.route('/inventory/add', methods=['POST'])
 def addInventory():
     supply = Inventory()
     #args_dict = request.args.to_dict(flat=True)
@@ -118,7 +118,7 @@ def getOrder(id):
         abort(404)
     return jsonify(order = order.serialize())
 
-@app.route('/orders/<int:id>/edit', methods=['Get', 'PUT'])
+@app.route('/orders/<int:id>/edit', methods=['PUT'])
 #@login_required
 def editOrder(id):
     order = Orderitems.query.filter_by(id=id).first()
@@ -141,7 +141,7 @@ def lastOrder():
         abort(404)
     return jsonify(inventory = orders[-1].serialize())
 
-@app.route('/orders/add', methods=['GET','POST'])
+@app.route('/orders/add', methods=['POST'])
 def addOrder():
     order = Orderitems()
     #args_dict = request.args.to_dict(flat=True)
