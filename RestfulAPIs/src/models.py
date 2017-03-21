@@ -1,15 +1,7 @@
 from src import db
 #from sqlalchemy.inspection import inspect
 from sqlalchemy import inspect
-'''
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 
-
-app = Flask(__name__)
-app.config.from_object('config')
-db = SQLAlchemy(app)
-'''
 
 class SerializableModel(db.Model):
  
@@ -68,6 +60,7 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
     giftWrapTax = db.Column(db.Float)
     shippingDiscount = db.Column(db.Float)
     promotionDiscount = db.Column(db.Float)
+    category = db.Column(db.String)
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))  #"inventory" must be lower case
     '''
     def __repr__(self):
@@ -93,6 +86,7 @@ class Inventory(SerializableModel):
     totalSupplyQuantity = db.Column(db.Integer)
     inStockSupplyQuantity = db.Column(db.Integer)
     costEach = db.Column(db.Float)
+    category = db.Column(db.String)
     orders = db.relationship('Orderitems', backref='inventoryRecord', lazy='dynamic')
 
     '''

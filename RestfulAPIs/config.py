@@ -2,6 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'tadmart.db')
+SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 '''
@@ -26,7 +27,8 @@ MAIL_PASSWORD = None
 
 # administrator list
 ADMINS = ['you@example.com']
-'''
-# pagination
+
+#pagination
 ENTRIES_PER_PAGE = 10
+'''
 

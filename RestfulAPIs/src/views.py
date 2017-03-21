@@ -3,7 +3,7 @@ from flask.json import dumps
 from src import app, db
 from sqlalchemy import create_engine, MetaData
 from .models import Inventory, Orderitems
-from config import ENTRIES_PER_PAGE, SQLALCHEMY_DATABASE_URI
+from config import SQLALCHEMY_DATABASE_URI
 
 @app.errorhandler(404)
 def not_found_error(error):
@@ -14,7 +14,7 @@ def internal_error(error):
     db.session.rollback()
     return jsonify({'error': 500})
 
-@app.route("/tables")
+@app.route("/api/1.0/tables")
 def index():
     tables = []
     for t in db.metadata.tables.items():
@@ -22,26 +22,30 @@ def index():
     print(tables)
     return jsonify({'tables': tables})
 
-@app.route("/inventory", methods=['GET'])
-@app.route('/inventory/pages/<int:page>', methods=['GET'])
-def listInventorySupplies(page = 1):
+@app.route("/api/1.0/inventory", methods=['GET'])
+def listInventorySupplies():
     '''
     returs: supplies are of the type of Inventory.
     '''
     #the function paginate(page=None, per_page=None, error_out=True) returns an Pagination object.
-    suppliers = Inventory.query.order_by(Inventory.id.desc()).paginate(page, ENTRIES_PER_PAGE, False).items
+    #curl -i "http://127.0.0.1:5000/inventory?page=1&perpage=4"
+    #the url must be inside the double quote.
+    #http://stackoverflow.com/questions/30586601/flask-only-sees-first-parameter-from-multiple-parameters-sent-with-curl
+    page = request.args.get('page',1)
+    perpage = request.args.get('perpage',10)
+    suppliers = Inventory.query.order_by(Inventory.id.desc()).paginate(int(page), int(perpage), False).items
     if not suppliers:
         abort(404)
     return jsonify(suppliers = Inventory.serialize_list(suppliers))
 
-@app.route("/inventory/<int:id>", methods=['GET'])
+@app.route("/api/1.0/inventory/<int:id>", methods=['GET'])
 def getSupply(id):
     supply = Inventory.query.filter_by(id=id).first()
     if not supply:
         abort(404)
     return jsonify(supply=supply.serialize())
 
-@app.route('/inventory/<int:id>/edit', methods=['PUT'])
+@app.route('/api/1.0/inventory/<int:id>', methods=['PUT'])
 #@login_required
 def editInventory(id):
     supply = Inventory.query.filter_by(id=id).first()
@@ -63,17 +67,17 @@ def editInventory(id):
         flash("This inventory with id %d doesn't exist" % id)
     if args_dict == None:
         flash("Did you change anything?")
-    redirect(url_for('getSupply', id=id)) 
+    #redirect(url_for('getSupply', id=id)) 
     return jsonify(supply = supply.serialize())
-
-@app.route('/inventory/last')
+'''
+@app.route('/api/1.0/inventory/last')
 def lastInventory():
     inventory = Inventory.query.all()
     if not inventory:
         abort(404)
     return jsonify(inventory = inventory[-1].serialize())
-
-@app.route('/inventory/add', methods=['POST'])
+'''
+@app.route('/api/1.0/inventory', methods=['POST'])
 def addInventory():
     supply = Inventory()
     #args_dict = request.args.to_dict(flat=True)
@@ -84,9 +88,10 @@ def addInventory():
         db.session.add(supply)
         db.session.commit()
         flash("Added a new supply entry")
-    redirect(url_for('getSupply', id=Inventory.query.all()[-1].id))
+    #redirect(url_for('getSupply', id=Inventory.query.all()[-1].id))
     return jsonify(supply = supply.serialize())
 
+'''
 @app.route('/inventory/<int:id>/delete', methods=['DELETE'])
 def deleteInventory(id):
     supply = Inventory.query.filter_by(id=id).first()
@@ -95,12 +100,10 @@ def deleteInventory(id):
     db.session.delete(supply)
     db.session.commit()
     return jsonify(supply = supply.serialize())
+'''
 
-@app.route("/", methods=['GET'])
-@app.route("/index", methods=['GET'])
-@app.route("/orders", methods=['GET'])
-@app.route('/orders/pages/<int:page>', methods=['GET'])
-def listOrders(page = 1):
+@app.route("/api/1.0/orders", methods=['GET'])
+def listOrders():
     '''
     returs: orders are of the type of Orderitems.
     '''
@@ -108,17 +111,19 @@ def listOrders(page = 1):
     orders = Orderitems.query.order_by(Orderitems.lastUpdateDate.desc())
     if not orders:
         abort(404)
-    orders = orders.paginate(page, ENTRIES_PER_PAGE, False).items
+    page = request.args.get('page',1)
+    perpage = request.args.get('perpage',10)
+    orders = orders.paginate(page, perpage, False).items
     return jsonify(orders = Orderitems.serialize_list(orders))
 
-@app.route("/orders/<int:id>", methods=['GET'])
+@app.route("/api/1.0/orders/<int:id>", methods=['GET'])
 def getOrder(id):
     order = Orderitems.query.filter_by(id=id).first()
     if not order:
         abort(404)
     return jsonify(order = order.serialize())
 
-@app.route('/orders/<int:id>/edit', methods=['PUT'])
+@app.route('/api/1.0/orders/<int:id>', methods=['PUT'])
 #@login_required
 def editOrder(id):
     order = Orderitems.query.filter_by(id=id).first()
@@ -131,17 +136,19 @@ def editOrder(id):
             setattr(order, k, v)
     db.session.commit()
     flash('Your changes have been saved.')
-    redirect(url_for('getOrder', id=id))
+    #redirect(url_for('getOrder', id=id))
     return jsonify(order = order.serialize())
 
-@app.route('/orders/last')
+'''
+@app.route('/api/1.0/orders/last')
 def lastOrder():
     orders = Orderitems.query.all()
     if not orders:
         abort(404)
     return jsonify(inventory = orders[-1].serialize())
+'''
 
-@app.route('/orders/add', methods=['POST'])
+@app.route('/api/1.0/orders', methods=['POST'])
 def addOrder():
     order = Orderitems()
     #args_dict = request.args.to_dict(flat=True)
@@ -152,10 +159,10 @@ def addOrder():
         db.session.add(order)
         db.session.commit()
         flash("Added a new order entry")
-    redirect(url_for('getOrder', id=Orderitems.query.all()[-1].id))
+    #redirect(url_for('getOrder', id=Orderitems.query.all()[-1].id))
     return jsonify(order = order.serialize())
 
-
+'''
 @app.route('/orders/<int:id>/delete', methods=['DELETE'])
 def deleteOrder(id):
     order = Orderitems.query.filter_by(id=id).first()
@@ -164,3 +171,4 @@ def deleteOrder(id):
     db.session.delete(order)
     db.session.commit()
     return jsonify(order = order.serialize())
+'''
