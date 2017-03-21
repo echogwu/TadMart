@@ -1,0 +1,22 @@
+1) How to run the program?
+$ cd ../Restful/
+$ pip install -r requirements.txt        //下载相关的包
+$ python run.py
+Then you can check the API results from 127.0.0.1:5000
+
+2) database design:
+sqlite> .tables
+INVENTORY   ORDERITEMS
+sqlite> .schema Inventory
+CREATE TABLE INVENTORY (id Integer primary key,asin text, supplier text, sellerSKU text not null, fnsku text not null, condition text, totalSupplyQuantity integer, inStockSupplyQuantity integer, costEach double);
+sqlite> .schema orderitems
+CREATE TABLE ORDERITEMS (id integer primary key, lastUpdateDate String not null, asin text, supplier text not null, sellerSKU text,orderItemId text,title text,quantityShipped integer,itemPriceCurrency text,itemPrice double,shippingPrice double,giftWrapPrice double,itemTax double,shippingTax double,giftWrapTax double,shippingDiscount double,promotionDiscount double,inventory_id integer,FOREIGN KEY (inventory_id) REFERENCES INVENTORY(id));
+
+3) API specs:
+https://github.com/echogwu/TadMart/wiki/Restful-APIs-provided-by-backend-so-far
+
+4) Project structure(backend):
+> Extract data from Amazon according to seller's secret ID
+> store data to local database
+> provide restful APIs to client(front end)
+
