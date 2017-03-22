@@ -1,9 +1,12 @@
 1) How to run the program?
-$ cd ../Restful/
-$ vitualenv flask
-$ flask/bin/pip install -r requirements.txt        //下载相关的包
-$ ./run.py
-Then you can check the API results from 127.0.0.1:5000/api/1.0/orders
+   a. run the jar file to get info from Amazon
+      $ java -jar run.jar
+   b. run the Restful API program
+      $ cd ../Restful/
+      $ vitualenv flask
+      $ flask/bin/pip install -r requirements.txt        //下载相关的包
+      $ ./run.py
+      Then you can check the API results from 127.0.0.1:5000/api/1.0/orders or other URIs.
 
 2) database design:
 sqlite> .tables
