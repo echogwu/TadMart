@@ -8,9 +8,7 @@
       $ flask/bin/pip install -r requirements.txt        //下载相关的包
       $ ./run.py
       Then you can check the API results from 127.0.0.1:5000/api/1.0/orders or other URIs.
-      >> NOTE: virtualenv directory flask has been ignored but it is required to run the program since some flask packages won't be installed without virtualenv. 
-      There are lower versions of same packages installed with python bundled with Mac OS.  If we want to install higher version of packages, we need this virtualenv to work. 
-      This is the case with Mac OS. It might not happen with other OS. If run on other operating systems, we need to change python interpreter from #!flask/bin/python to your system's python path.
+      >> NOTE: virtualenv directory flask has been ignored but it is required to run the program since some flask packages won't be installed without virtualenv. There are lower versions of same packages installed with python bundled with Mac OS.  If we want to install higher version of packages, we need this virtualenv to work. This is the case with Mac OS. It might not happen with other OS. If run on other operating systems, we need to change python interpreter from #!flask/bin/python to your system's python path.
 
 2) database design:
 sqlite> .tables
