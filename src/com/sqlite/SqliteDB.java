@@ -62,6 +62,7 @@ public class SqliteDB {
           		+ "giftWrapTax double,"
           		+ "shippingDiscount double,"
           		+ "promotionDiscount double,"
+          		+ "category text, "
           		+ "inventory_id integer,"
           		+ "FOREIGN KEY (inventory_id) REFERENCES INVENTORY(id));");
           		//+ "promotionDiscount double,"
@@ -107,7 +108,8 @@ public class SqliteDB {
         			+ "condition text, "
         			+ "totalSupplyQuantity integer, "
         			+ "inStockSupplyQuantity integer, "
-        			+ "costEach double);");
+        			+ "costEach double"
+        			+ "category text);");
         	}
         catch(SQLException e)
         {
@@ -139,7 +141,43 @@ public class SqliteDB {
     		return Double.valueOf(in.getAmount());
     }
     
+    private Boolean doesEntryExist(String tableName, String key, String value){
+        String sql = String.format("SELECT * FROM %s where %s==?", tableName, key);
+        Boolean result = false;
+        
+        Connection connection = this.connect();
+        try (PreparedStatement pstmt  = connection.prepareStatement(sql)){
+        	pstmt.setString(1, value);
+        	ResultSet rs  = pstmt.executeQuery();
+        	if(rs.next()){
+        		result = true;
+        		}
+        	}
+        catch (SQLException e) {
+        	System.out.println(e.getMessage());
+        	}
+        finally
+        {
+            try
+            {
+            	if(connection != null)
+            		connection.close();
+            	}
+            catch(SQLException e){
+            	// connection close failed.
+            	System.err.println(e);
+            	}
+            }
+        
+        return result;
+    }
+    
     public void insertOrderItem(OrderItem item, String supplier, String lastUpdateDate){ 
+    	
+        if(this.doesEntryExist("Orderitems", "orderItemId", item.getOrderItemId())){
+        	System.out.println(item.getOrderItemId()+" in orderitems exists already");
+        	return;
+        }
     	
     	String sql = "INSERT INTO ORDERITEMS(id, asin, supplier, sellerSKU, orderItemId, title, quantityShipped, "
     			+ "itemPriceCurrency, itemPrice, shippingPrice, giftWrapPrice, itemTax, shippingTax, giftWrapTax, "
@@ -214,6 +252,10 @@ public class SqliteDB {
     }
     
     public void insertInventory(InventorySupply item, String supplier){ 
+    	if(this.doesEntryExist("Inventory", "sellerSKU", item.getSellerSKU())){
+    		System.out.println(item.getSellerSKU()+" in Inventory exists already");
+        	return;
+        }
     	
     	String sql = "INSERT INTO INVENTORY(asin, supplier, sellerSKU, fnsku, condition, totalSupplyQuantity, inStockSupplyQuantity, costEach, id) "
     			+ "VALUES(?,?,?,?,?,?,?,0,$next_id)";
@@ -256,6 +298,7 @@ public class SqliteDB {
     
     //format of date: "2017-02-03"
     public void selectOrderItemAfterDate(String date){
+    	
     	String sql = "SELECT id, datetime(lastUpdateDate), orderItemId, asin, supplier, sellerSKU, title, quantityShipped, itemPrice "
                 + "FROM ORDERITEMS WHERE lastUpdateDate >= date(?)";
         //String sql = "SELECT * FROM ORDERITEMS";
@@ -405,35 +448,5 @@ public class SqliteDB {
             	}
             }
     }
-        
-    public void test(String sellerSKU){
-    	Connection connection = this.connect();
-    	try {
-			ResultSet rs = connection.createStatement().executeQuery("select id from INVENTORY where sellerSKU = " + "'" + sellerSKU + "'");
-		    while(rs.next()){
-		    	int inventory_id = rs.getInt("id");
-		    	System.out.println("=======" + inventory_id + "==========");
-		    }
-    	} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-    }
-    
-    public static void main(String args[]){
-    	/*
-    	OrderItem item_1 = new OrderItem().withASIN("B00P29NCH1").withSellerSKU("LD-6EJV-PZJZ1").withOrderItemId("37630154485441").withTitle("1_Ikea Strandkrypa Duvet Cover and Pillowcases, Full/Queen, White").
-    			withQuantityShipped(1);
-    	OrderItem item_2 = new OrderItem().withASIN("B00P29NCH2").withSellerSKU("LD-6EJV-PZJZ2").withOrderItemId("37630154485442").withTitle("2_Ikea Strandkrypa Duvet Cover and Pillowcases, Full/Queen, White").
-    			withQuantityShipped(2);
-    			*/
-    	SqliteDB db = new SqliteDB();
-    	db.createTableOrderItems();
-    	/*
-    	db.insertOrderItem(item_1, "AMAZON");
-    	db.insertOrderItem(item_2, "AMAZON");
-    	*/
-    	//db.test("LD-6EJV-PZJZ");
-    	db.selectAllFromOrderItems();  	
-    }
+
 }

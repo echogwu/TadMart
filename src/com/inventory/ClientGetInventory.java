@@ -101,11 +101,16 @@ public class ClientGetInventory {
         }
     }
     
-    public void extractInventoryItems(){
+    public int extractInventoryItems(XMLGregorianCalendar queryStartDateTime){
     	// Get a client connection.
         // Make sure you've set the variables in MWSInventoryConfig.
         FBAInventoryServiceMWSClient client = MWSInventoryConfig.getClient();
 
+        SqliteDB db = new SqliteDB();
+        db.createTableInventory();
+        
+        int supplyCounter = 0;
+        
         // Create a request.
         //ListInventorySupplyRequest request = new ListInventorySupplyRequest();
         String sellerId = "A2GN201B8N7Q8Q";
@@ -113,7 +118,7 @@ public class ClientGetInventory {
         String marketplace = "US";
         String marketplaceId = "ATVPDKIKX0DER";
         SellerSkuList sellerSkus = new SellerSkuList();
-        XMLGregorianCalendar queryStartDateTime = MwsUtl.getDTF().newXMLGregorianCalendar(new GregorianCalendar(2016,0,01));
+        //XMLGregorianCalendar queryStartDateTime = MwsUtl.getDTF().newXMLGregorianCalendar(new GregorianCalendar(2016,0,01));
         String responseGroup = "Basic";
         ListInventorySupplyRequest request = new ListInventorySupplyRequest(sellerId, mwsAuthToken, marketplace, marketplaceId, sellerSkus, queryStartDateTime, responseGroup);
 
@@ -121,7 +126,8 @@ public class ClientGetInventory {
         ListInventorySupplyResponse response = ClientGetInventory.invokeListInventorySupply(client, request);
         
         for(InventorySupply item: response.getListInventorySupplyResult().getInventorySupplyList().getMember()){
-        	this.addItem(item);
+        	supplyCounter += 1;
+        	db.insertInventory(item, "AMAZON");
         }
         //Throttling.sleep(60);
         
@@ -143,7 +149,8 @@ public class ClientGetInventory {
         			nextToken);
         	ListInventorySupplyByNextTokenResponse nextTokenResponse = ClientGetInventory.invokeListInventorySupplyByNextToken(client, nextTokenRequest);
         	for(InventorySupply item: nextTokenResponse.getListInventorySupplyByNextTokenResult().getInventorySupplyList().getMember()){
-            	this.addItem(item);
+        		supplyCounter += 1;
+        		db.insertInventory(item, "AMAZON");
             }
         	isSetNextToken = nextTokenResponse.getListInventorySupplyByNextTokenResult().isSetNextToken();
         	if(isSetNextToken){
@@ -151,27 +158,6 @@ public class ClientGetInventory {
         	}
         	Throttling.sleep(60);
         }
+        return supplyCounter;
     }
-  
-    public static void main(String[] args){
-    	
-    	ClientGetInventory clientForInventory = new ClientGetInventory();
-    	SqliteDB db = new SqliteDB();
-    	db.createTableInventory();
-    	logger.printFileName();
-    	clientForInventory.extractInventoryItems();
-    	
-    	LinkedList<InventorySupply> inventoryItems = clientForInventory.getItems();
-    	
-    	logger.write("\nAmazon inventory:");
-		logger.write(String.valueOf(inventoryItems.size()));
-		logger.write("\n");
-    	
-    	for(InventorySupply item: inventoryItems){
-    		db.insertInventory(item, "AMAZON");
-    	}
-    
-		db.selectAllFromInventory();
-		System.out.println("Done");
-	}
 }

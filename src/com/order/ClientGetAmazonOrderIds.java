@@ -175,7 +175,7 @@ public class ClientGetAmazonOrderIds {
 	}
 	*/
 	
-	public int getAmazonIds(int afterYear, int afterMonth, int afterDay, int beforeYear, int beforeMonth, int beforeDay){
+	public int getAmazonOrderItems(int afterYear, int afterMonth, int afterDay, int beforeYear, int beforeMonth, int beforeDay){
 	//public int getAmazonIds(){
 		
 		// Get a client connection.
@@ -184,16 +184,7 @@ public class ClientGetAmazonOrderIds {
         ClientGetOderItems clientForItems = new ClientGetOderItems();
         SqliteDB db = new SqliteDB();
         db.createTableOrderItems();
-        
-        // Create a request. We can set values from createdAfter, createdBefore, marketplaceId, orderStatus
-        //ListOrdersRequest request = new OrderRequestBuilder().buildListOrderRequest();  
-        //There is no order before 2016/07/01
-        //int afterYear = 2016;
-        //int afterMonth = 7;
-        //int afterDay = 5;
-        //int beforeYear = 2016;
-        //int beforeMonth = 7;
-        //int beforeDay = 15;
+
         ListOrdersRequest request = new OrderRequestBuilder().
         		lastUpdatedAfter(MwsUtl.getDTF().newXMLGregorianCalendar(new GregorianCalendar(afterYear,afterMonth,afterDay))).
         		lastUpdatedBefore(MwsUtl.getDTF().newXMLGregorianCalendar(new GregorianCalendar(beforeYear,beforeMonth,beforeDay))).
@@ -204,14 +195,14 @@ public class ClientGetAmazonOrderIds {
         
         // Make the call.
         //return Order.invokeListOrders(client, request);
-        int amazonOrderIdCounter = 0;
+        int amazonOrderItemsCounter = 0;
         ListOrdersResponse response = ClientGetAmazonOrderIds.invokeListOrders(client, request);
         for (Order order: response.getListOrdersResult().getOrders()){
-        	amazonOrderIdCounter += 1;
         	clientForItems.extractOrderItems(order.getAmazonOrderId());
         	XMLGregorianCalendar lastUpdateDate = order.getLastUpdateDate();
         	//System.out.println("==========="+lastUpdateDate+"===========");
         	for(OrderItem item: clientForItems.getItems()){
+        		amazonOrderItemsCounter += 1;
         		db.insertOrderItem(item, "AMAZON", lastUpdateDate.toString());
         	}
         	clientForItems.removeItems();
@@ -245,11 +236,12 @@ public class ClientGetAmazonOrderIds {
         	}
         	nextToken = nextTokenResponse.getListOrdersByNextTokenResult().getNextToken();
         	for(Order order: nextTokenResponse.getListOrdersByNextTokenResult().getOrders()){
-        		amazonOrderIdCounter += 1;
+        		
             	clientForItems.extractOrderItems(order.getAmazonOrderId());
             	XMLGregorianCalendar lastUpdateDate = order.getLastUpdateDate();
             	//System.out.println("==========="+lastUpdateDate+"===========");
             	for(OrderItem item: clientForItems.getItems()){
+            		amazonOrderItemsCounter += 1;
             		db.insertOrderItem(item, "AMAZON", lastUpdateDate.toString());
             	}
             	clientForItems.removeItems();
@@ -257,172 +249,7 @@ public class ClientGetAmazonOrderIds {
         	}
             Throttling.sleep(60);
         }
-        return amazonOrderIdCounter;
+        return amazonOrderItemsCounter;
         
-	}
-	
-	public static void main(String[] args){
-		logger.printFileName();
-		SqliteDB db = new SqliteDB();
-		
-		//List<Set> dates = new List<>();
-		int counter = 0;
-		ClientGetAmazonOrderIds order = null;
-		
-		/*
-	    order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016, 7,5,2016, 7,15);
-		logger.write("\n\nAmazon Order Ids from 7/5 to 7/15: "+String.valueOf(counter)+"\n\n");
-		
-		
-		Throttling.sleep(5*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,7,15,2016,7,25);
-		logger.write("\n\nAmazon Order Ids from 7/15 to 7/25: "+String.valueOf(counter)+"\n\n");
-		
-		
-		//Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,7,25,2016,8,5);
-		logger.write("\n\nAmazon Order Ids from 7/25 to 8/5: "+String.valueOf(counter)+"\n\n");
-		
-		
-		Throttling.sleep(10*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,8,5,2016,8,10);
-		logger.write("\n\nAmazon Order Ids from 8/5 to 8/15: "+String.valueOf(counter)+"\n\n");
-		
-		
-		//Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,8,10,2016,8,15);
-		logger.write("\n\nAmazon Order Ids from 8/5 to 8/15: "+String.valueOf(counter)+"\n\n");
-		
-		
-		Throttling.sleep(5*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,8,15,2016,8,25);
-		logger.write("\n\nAmazon Order Ids from 8/15 to 8/25: "+String.valueOf(counter)+"\n\n");
-		
-		
-		//Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,8,25,2016,9,5);
-		logger.write("\n\nAmazon Order Ids from 8/25 to 9/5: "+String.valueOf(counter)+"\n\n");
-		
-		
-		Throttling.sleep(5*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,9,5,2016,9,15);
-		logger.write("\n\nAmazon Order Ids from 9/5 to 9/15: "+String.valueOf(counter)+"\n\n");
-		
-		
-		//Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,9,15,2016,9,25);
-		logger.write("\n\nAmazon Order Ids from 9/15 to 9/25: "+String.valueOf(counter)+"\n\n");
-		
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,9,25,2016,10,5);
-		logger.write("\n\nAmazon Order Ids from 9/25 to 10/5: "+String.valueOf(counter)+"\n\n");
-		
-		
-		//Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,10,5,2016,10,15);
-		logger.write("\n\nAmazon Order Ids from 10/5 to 10/15: "+String.valueOf(counter)+"\n\n");
-		
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,10,15,2016,10,25);
-		logger.write("\n\nAmazon Order Ids from 10/15 to 10/25: "+String.valueOf(counter)+"\n\n");
-		
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,10,25,2016,11,5);
-		logger.write("\n\nAmazon Order Ids from 10/25 to 11/5: "+String.valueOf(counter)+"\n\n");
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016,11,5,2016,11,15);
-		logger.write("\n\nAmazon Order Ids from 11/5 to 11/15: "+String.valueOf(counter)+"\n\n");
-		
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016, 11,15,2016,11,25);
-		logger.write("\n\nAmazon Order Ids from 11/15 to 11/25: "+String.valueOf(counter)+"\n\n");
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2016, 11,25,2017,0,5);
-		logger.write("\n\nAmazon Order Ids from 2016/11/25 to 2017/0/5: "+String.valueOf(counter)+"\n\n");
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2017,0,5,2017,0,15);
-		logger.write("\n\nAmazon Order Ids from 2017/0/5 to 2017/0/15: "+String.valueOf(counter)+"\n\n");
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2017,0,15,2017,0,25);
-		logger.write("\n\nAmazon Order Ids from 2017/0/15 to 2017/0/25: "+String.valueOf(counter)+"\n\n");
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2017,0,25,2017,1,5);
-		logger.write("\n\nAmazon Order Ids from 2017/0/25 to 2017/1/5: "+String.valueOf(counter)+"\n\n");
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2017,1,5,2017,1,15);
-		logger.write("\n\nAmazon Order Ids from 2017/1/5 to 2017/1/15: "+String.valueOf(counter)+"\n\n");
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2017,1,15,2017,1,25);
-		logger.write("\n\nAmazon Order Ids from 2017/1/15 to 2017/1/25: "+String.valueOf(counter)+"\n\n");
-		
-		Throttling.sleep(30*60);
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2017,1,25,2017,2,5);
-		logger.write("\n\nAmazon Order Ids from 2017/1/25 to 2017/2/5: "+String.valueOf(counter)+"\n\n");
-	    */
-		
-		counter = 0;
-		order = new ClientGetAmazonOrderIds();
-		counter = order.getAmazonIds(2017,2,5,2017,2,15);
-		logger.write("\n\nAmazon Order Ids from 2017/2/5 to 2017/2/15: "+String.valueOf(counter)+"\n\n");
-	    
-		
-		db.selectAllFromOrderItems();
-		System.out.println("=============selectAfter===============");
-		db.selectOrderItemAfterDate("2016-08-29");
-		System.out.println("Done");
 	}
 }
