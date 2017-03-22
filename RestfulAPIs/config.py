@@ -4,6 +4,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'tadmart.db')
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+SECRET_KEY = 'super secret key'
 
 '''
 CSRF_ENABLED = True
@@ -31,4 +32,3 @@ ADMINS = ['you@example.com']
 #pagination
 ENTRIES_PER_PAGE = 10
 '''
-

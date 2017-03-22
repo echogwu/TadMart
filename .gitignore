@@ -5,8 +5,8 @@
 logs/
 
 # virtual env
-./RestfulAPIs/flask
-./RestfulAPIs/activate
+/RestfulAPIs/flask
+/RestfulAPIs/activate
 
 # backup databases
-./RestfulAPIs/tadmart_*.db
+/RestfulAPIs/tadmart_*.db
