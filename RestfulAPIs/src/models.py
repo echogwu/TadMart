@@ -1,10 +1,23 @@
-from src import db
+from src import db, app
 #from sqlalchemy.inspection import inspect
 from sqlalchemy import inspect
+from config import WHOOSH_ENABLED
+import flask_whooshalchemy as wa
+
+# need to check if whooshalchemy supports python 3
+
+import sys
+if sys.version_info >= (3, 0):
+    enable_search = False
+else:
+    enable_search = WHOOSH_ENABLED
+    if enable_search:
+        import flask_whooshalchemy as wa
+
 
 
 class SerializableModel(db.Model):
- 
+
     __abstract__ = True
 
     def serialize(self):
@@ -42,6 +55,8 @@ class SerializableModel(db.Model):
         return [item.serialize() for item in listOfObjects]
 
 class Orderitems(SerializableModel):     # the class name must not be "OrderItems", the table name will be interpreted as "order_items". It doesnot matter if the first letter is capitalized
+    __searchable__ = ['asin', 'supplier', 'sellerSKU', 'orderItemId', 'title', 'itemPrice', 'shippingPrice', 'category', 'profit']
+    #__searchable__ = ['asin', 'supplier', 'sellerSKU', 'orderItemId', 'title', 'itemPrice', 'shippingPrice', 'category']
 
     id = db.Column(db.Integer, primary_key = True)
     lastUpdateDate = db.Column(db.String)
@@ -61,6 +76,7 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
     shippingDiscount = db.Column(db.Float)
     promotionDiscount = db.Column(db.Float)
     category = db.Column(db.String)
+    profit = db.Column(db.Float)
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))  #"inventory" must be lower case
     '''
     def __repr__(self):
@@ -77,6 +93,9 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
 
 
 class Inventory(SerializableModel):
+    __searchable__ = ['asin', 'supplier', 'sellerSKU', 'fnsku', 'condition', 'totalSupplyQuantity', 'inStockSupplyQuantity', 'category', 'orderQuantity']
+    #__searchable__ = ['asin', 'supplier', 'sellerSKU', 'fnsku', 'condition', 'totalSupplyQuantity', 'inStockSupplyQuantity', 'category']
+
     id = db.Column(db.Integer, primary_key = True)
     asin = db.Column(db.String)
     supplier = db.Column(db.String)
@@ -87,6 +106,7 @@ class Inventory(SerializableModel):
     inStockSupplyQuantity = db.Column(db.Integer)
     costEach = db.Column(db.Float)
     category = db.Column(db.String)
+    orderQuantity = db.Column(db.Integer)
     orders = db.relationship('Orderitems', backref='inventoryRecord', lazy='dynamic')
 
     '''
@@ -94,6 +114,23 @@ class Inventory(SerializableModel):
         return '<Inventory %r>' % (self.fnsku)
     '''
 
+class Categories(SerializableModel):
+    __searchable__ = ['name']
+
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String)
+
+class Suppliers(SerializableModel):
+    __searchable__ = ['name']
+
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String)
+
+if enable_search:
+    wa.whoosh_index(app, Orderitems)
+    wa.whoosh_index(app, Inventory)
+    wa.whoosh_index(app, Categories)
+    wa.whoosh_index(app, Suppliers)
 
 
 
