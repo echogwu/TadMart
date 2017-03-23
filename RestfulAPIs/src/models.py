@@ -76,8 +76,8 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
     shippingDiscount = db.Column(db.Float)
     promotionDiscount = db.Column(db.Float)
     category = db.Column(db.String)
-    profit = db.Column(db.Float)
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))  #"inventory" must be lower case
+    profit = db.Column(db.Float)
     '''
     def __repr__(self):
         return '<OrderItem %r>' % (self.title)
@@ -125,13 +125,17 @@ class Suppliers(SerializableModel):
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String)
-
+'''
 if enable_search:
     wa.whoosh_index(app, Orderitems)
     wa.whoosh_index(app, Inventory)
     wa.whoosh_index(app, Categories)
     wa.whoosh_index(app, Suppliers)
-
+'''
+wa.whoosh_index(app, Orderitems)
+wa.whoosh_index(app, Inventory)
+wa.whoosh_index(app, Categories)
+wa.whoosh_index(app, Suppliers)
 
 
 

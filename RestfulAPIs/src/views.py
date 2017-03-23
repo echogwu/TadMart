@@ -178,15 +178,19 @@ def deleteOrder():
     return jsonify(data=order.serialize())
 '''
 
-@app.route('/api/v1.0/orders', methods=['GET'])
+@app.route('/api/v1.0/orders/search', methods=['GET'])
 #@login_required
 def search_order():
-    query = request.args.get('query', '')
+    query = request.args.get('query', '').encode('ascii','ignore')
+    print("query=",query)
+    print("type(query)=%s" % type(query))
     #results = Orderitems.query.whoosh_search(query, MAX_SEARCH_RESULTS).all()
-    results = Orderitems.query.whoosh_search(query, MAX_SEARCH_RESULTS)
-    return jsonify(serialize_paginated_data(results))
+    #results = Orderitems.query.whoosh_search(query).all()
+    results = Orderitems.query.whoosh_search("TadMart")
+    print(results)
+    return jsonify(data=Orderitems.serialize_list(results))
     
-@app.route('/api/v1.0/inventory', methods=['GET'])
+@app.route('/api/v1.0/inventory/search', methods=['GET'])
 #@login_required
 def search_inventory():
     query = request.args.get('query', '')

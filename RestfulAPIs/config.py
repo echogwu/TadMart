@@ -6,7 +6,8 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 SECRET_KEY = 'super secret key'
 WHOOSH_ENABLED = True
-
+SQLALCHEMY_RECORD_QUERIES = True
+WHOOSH_BASE = os.path.join(basedir, 'search.db')
 '''
 CSRF_ENABLED = True
 SECRET_KEY = 'you-will-never-guess'
