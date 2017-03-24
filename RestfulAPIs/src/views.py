@@ -145,6 +145,7 @@ def deleteInventory():
 #@login_required
 def listOrders():
     '''Search orders, if no search criterion is provided, return all orders
+    params:
     - page: int
     - per:  int
     - inventory_id: int
@@ -153,7 +154,7 @@ def listOrders():
     - supplier: text
     - profitable: text in ['Y', 'N', 'A']
     - query: text
-    response
+    response:
     - paginated list of orders
     '''
     page = int(request.args.get('page', 1))
