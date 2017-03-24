@@ -119,14 +119,14 @@ class Categories(SerializableModel):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
-    orders = db.relationship('Orderitems', backref='category', lazy='dynamic')
+    orders = db.relationship('Inventory', backref='category', lazy='dynamic')
 
 class Suppliers(SerializableModel):
     __searchable__ = ['name']
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
-    orders = db.relationship('Orderitems', backref='supplier', lazy='dynamic')
+    orders = db.relationship('Inventory', backref='supplier', lazy='dynamic')
 '''
 if enable_search:
     wa.whoosh_index(app, Orderitems)
