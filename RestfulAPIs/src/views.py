@@ -167,11 +167,9 @@ def listOrders():
     profitable = request.args.get('profitable', '').encode('ascii', 'ignore')
     query = request.args.get('query','').encode('ascii', 'ignore')
 
-    fullList = Orderitems.query 
+    fullList = Orderitems.query
     filter_inventory = fullList.filter_by(inventory_id=inventory_id) if inventory_id else fullList
-    #######################need to handle date comparison######################
-    filter_update = filter_inventory.filter(Orderitems.lastUpdateDate>=lastUpdateDateAfter) if lastUpdateDateAfter else filter_inventory 
-    #######################need to handle date comparison######################
+    filter_update = filter_inventory.filter(Orderitems.lastUpdateDate>=lastUpdateDateAfter) if lastUpdateDateAfter else filter_inventory
     filter_category = filter_update.filter_by(category=category) if category else filter_update
     filter_supplier = filter_category.filter_by(supplier=supplier) if supplier else filter_category
     filter_profitable = filter_supplier

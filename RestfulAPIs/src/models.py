@@ -61,7 +61,7 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
     id = db.Column(db.Integer, primary_key = True)
     lastUpdateDate = db.Column(db.String)
     asin = db.Column(db.String)
-    supplier = db.Column(db.String, nullable=False)
+    supplier = db.Column(db.String)    #copy from the inventory record, can not be edited
     sellerSKU = db.Column(db.String)
     orderItemId = db.Column(db.String)
     title = db.Column(db.String)
@@ -75,7 +75,7 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
     giftWrapTax = db.Column(db.Float)
     shippingDiscount = db.Column(db.Float)
     promotionDiscount = db.Column(db.Float)
-    category = db.Column(db.String)
+    category = db.Column(db.String)      #copy from the inventory record, can not be edited
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))  #"inventory" must be lower case
     profit = db.Column(db.Float)
     '''
@@ -98,16 +98,16 @@ class Inventory(SerializableModel):
 
     id = db.Column(db.Integer, primary_key = True)
     asin = db.Column(db.String)
-    supplier = db.Column(db.String)
+    supplier = db.Column(db.String, db.ForeignKey('suppliers.name'))
     sellerSKU = db.Column(db.String, nullable=False)
     fnsku = db.Column(db.String, nullable=False)
     condition = db.Column(db.String)
     totalSupplyQuantity = db.Column(db.Integer)
     inStockSupplyQuantity = db.Column(db.Integer)
     costEach = db.Column(db.Float)
-    category = db.Column(db.String)
+    category = db.Column(db.String, db.ForeignKey('categories.name'))
     orderQuantity = db.Column(db.Integer)
-    orders = db.relationship('Orderitems', backref='inventoryRecord', lazy='dynamic')
+    orders = db.relationship('Orderitems', backref='inventory', lazy='dynamic')
 
     '''
     def __repr__(self):
@@ -117,14 +117,16 @@ class Inventory(SerializableModel):
 class Categories(SerializableModel):
     __searchable__ = ['name']
 
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True)
+    orders = db.relationship('Orderitems', backref='category', lazy='dynamic')
 
 class Suppliers(SerializableModel):
     __searchable__ = ['name']
 
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True)
+    orders = db.relationship('Orderitems', backref='supplier', lazy='dynamic')
 '''
 if enable_search:
     wa.whoosh_index(app, Orderitems)
