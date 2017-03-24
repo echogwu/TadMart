@@ -54,7 +54,7 @@ def listInventorySupplies():
     query:
     - page
     - per
-    - search
+    - query
     response:
     - paginated inventory list
     '''
@@ -64,12 +64,9 @@ def listInventorySupplies():
     #http://stackoverflow.com/questions/30586601/flask-only-sees-first-parameter-from-multiple-parameters-sent-with-curl
     page = int(request.args.get('page', 1))
     per = int(request.args.get('per', ENTRIES_PER_PAGE))
-    search = request.args.get('search')
-    if search:
-        suppliers = Inventory.query.whoosh_search(query, MAX_SEARCH_RESULTS)
-    else:
-        suppliers = Inventory.query.order_by(Inventory.id.desc())
-    suppliers = suppliers.paginate(page, per, False)
+    query = request.args.get('query','')
+    search = Inventory.query.whoosh_search(query, MAX_SEARCH_RESULTS) if query else Inventory.query
+    suppliers = search.order_by(Inventory.id.desc()).paginate(page, per, False)
     return jsonify(serialize_paginated_data(suppliers))
 
 @app.route("/api/v1.0/inventories/<int:id>", methods=['GET'])
@@ -144,21 +141,47 @@ def deleteInventory():
     return jsonify(data=supply.serialize())
 '''
 
-@app.route('/api/v1.0/inventories/<int:id>/orders', methods=['GET'])
-def listOrders(id):
-    '''Get order list of an inventory.
-    params:
-    - id
-    query:
-    - page
-    - per
-    response:
-    - paginated order list
+@app.route('/api/v1.0/orders', methods=['GET'])
+#@login_required
+def listOrders():
+    '''Search orders, if no search criterion is provided, return all orders
+    query
+    - page: int
+    - per:  int
+    - inventory_id: int
+    - lastUpdateDateAfter: text of a date like "2016-09-21T02:14:37Z"
+    - category: text
+    - supplier: text
+    - profitable: text in ['Y', 'N', 'A']
+    - query: text
+    response
+    - paginated list of orders
     '''
-    #the function paginate(page=None, per_page=None, error_out=True) returns an Pagination object.
     page = int(request.args.get('page', 1))
     per = int(request.args.get('per', ENTRIES_PER_PAGE))
-    orders = Orderitems.query.filter_by(inventory_id=id).order_by(Orderitems.lastUpdateDate.desc()).paginate(page, per, False)
+
+    inventory_id = int(request.args.get('inventory_id', 0))
+    lastUpdateDateAfter = request.args.get('lastUpdateDateAfter', '')
+    category = request.args.get('category','').encode('ascii', 'ignore')
+    supplier = request.args.get('supplier', '').encode('ascii', 'ignore')
+    profitable = request.args.get('profitable', '').encode('ascii', 'ignore')
+    query = request.args.get('query','').encode('ascii', 'ignore')
+
+    fullList = Orderitems.query 
+    filter_inventory = fullList.filter_by(inventory_id=inventory_id) if inventory_id else fullList
+    #######################need to handle date comparison######################
+    filter_update = filter_inventory.filter(Orderitems.lastUpdateDate>=lastUpdateDateAfter) if lastUpdateDateAfter else filter_inventory 
+    #######################need to handle date comparison######################
+    filter_category = filter_update.filter_by(category=category) if category else filter_update
+    filter_supplier = filter_category.filter_by(supplier=supplier) if supplier else filter_category
+    filter_profitable = filter_supplier
+    if profitable == 'Y':
+        filter_profitable = filter_supplier.filter(Orderitems.profit>=0)
+    elif profitable == 'N':
+        filter_profitable = filter_supplier.filter(Orderitems.profit<=0)
+    filter_query = filter_profitable.whoosh_search(query, MAX_SEARCH_RESULTS) if query else filter_profitable
+
+    orders = filter_query.order_by(Orderitems.lastUpdateDate.desc()).paginate(page, per, False)
     return jsonify(serialize_paginated_data(orders))
 
 @app.route('/api/v1.0/orders/<int:id>', methods=['GET'])
@@ -228,25 +251,7 @@ def deleteOrder():
     return jsonify(data=order.serialize())
 '''
 
-@app.route('/api/v1.0/orders', methods=['GET'])
-#@login_required
-def search_order():
-    '''Search orders
-    query
-    - page
-    - per
-    - search
-    response
-    - paginated list of orders
-    '''
-    query = request.args.get('search', '').encode('ascii', 'ignore')
-    print("query=",query)
-    print("type(query)=%s" % type(query))
-    #results = Orderitems.query.whoosh_search(query, MAX_SEARCH_RESULTS).all()
-    #results = Orderitems.query.whoosh_search(query).all()
-    results = Orderitems.query.whoosh_search("TadMart")
-    print(results)
-    return jsonify(data=Orderitems.serialize_list(results))
+
 
 @app.route('/api/v1.0/categories', methods=['GET'])
 def listCategories():
