@@ -145,7 +145,6 @@ def deleteInventory():
 #@login_required
 def listOrders():
     '''Search orders, if no search criterion is provided, return all orders
-    query
     - page: int
     - per:  int
     - inventory_id: int
