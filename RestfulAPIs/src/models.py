@@ -30,11 +30,11 @@ class SerializableModel(db.Model):
         relationships = self.__mapper__.relationships.keys()
 
         for key in columns:
-            print("column key="+key)
+            #print("column key="+key)
             ret_data[key] = getattr(self, key)
 
         for key in relationships:
-            print("relationship key="+key)
+            #print("relationship key="+key)
             is_list = self.__mapper__.relationships[key].uselist
             if is_list:
                 ret_data[key] = []
@@ -83,14 +83,6 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
         return '<OrderItem %r>' % (self.title)
     '''
 
-    @property
-    def serialization(self):
-        result = {}
-        for f in inspect(Orderitems).attrs:
-            if f.key == 'inventory_id':
-                result[f.key] = self.inventoryrecord.id
-            result[f.key] = getattr(self, f.key)
-
 
 class Inventory(SerializableModel):
     __searchable__ = ['asin', 'supplier', 'sellerSKU', 'fnsku', 'condition', 'totalSupplyQuantity', 'inStockSupplyQuantity', 'category', 'orderQuantity']
@@ -107,7 +99,7 @@ class Inventory(SerializableModel):
     costEach = db.Column(db.Float)
     category = db.Column(db.String, db.ForeignKey('categories.name'))
     orderQuantity = db.Column(db.Integer)
-    orders = db.relationship('Orderitems', backref='inventory', lazy='dynamic')
+    orders = db.relationship('Orderitems', backref='inventoryRecord', lazy='dynamic')
 
     '''
     def __repr__(self):
@@ -119,14 +111,15 @@ class Categories(SerializableModel):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
-    orders = db.relationship('Inventory', backref='category', lazy='dynamic')
+    # this backref cant be named the same as "category" because Inventory already has this column
+    inventories = db.relationship('Inventory', backref='categoryRecord', lazy='dynamic')
 
 class Suppliers(SerializableModel):
     __searchable__ = ['name']
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True)
-    orders = db.relationship('Inventory', backref='supplier', lazy='dynamic')
+    inventories = db.relationship('Inventory', backref='supplierRecord', lazy='dynamic')
 '''
 if enable_search:
     wa.whoosh_index(app, Orderitems)
