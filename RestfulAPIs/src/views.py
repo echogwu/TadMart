@@ -65,8 +65,17 @@ def listInventorySupplies():
     page = int(request.args.get('page', 1))
     per = int(request.args.get('per', ENTRIES_PER_PAGE))
     query = request.args.get('query','')
-    search = Inventory.query.whoosh_search(query, MAX_SEARCH_RESULTS) if query else Inventory.query
+    print('query: %s' % query)
+    if query:
+        print("query is not empty")
+        search = Inventory.query.whoosh_search(query, MAX_SEARCH_RESULTS)
+    else:
+        print("query is empty")
+        search = Inventory.query
     suppliers = search.order_by(Inventory.id.desc()).paginate(page, per, False)
+    #suppliers = search.paginate(page, per, False)
+    #suppliers = Inventory.query
+    #print("count of items: %d" % len(suppliers))
     return jsonify(serialize_paginated_data(suppliers))
 
 @app.route("/api/v1.0/inventories/<int:id>", methods=['GET'])
