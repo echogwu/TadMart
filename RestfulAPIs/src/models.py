@@ -30,23 +30,28 @@ class SerializableModel(db.Model):
         relationships = self.__mapper__.relationships.keys()
 
         for key in columns:
-            print("column key="+key)
+            #print("column key="+key)
             ret_data[key] = getattr(self, key)
 
+        #the table Inventory has 3 relationships. the keys are: orders, categoryRecord, supplierRecord. 
         for key in relationships:
-            print("relationship key="+key)
+            #print("key=%s" % key)
+            #print("relationship key="+key)
             is_list = self.__mapper__.relationships[key].uselist
             if is_list:
+                #print("is_list=%s" % is_list)         #the relationship "orders" excute this block
                 ret_data[key] = []
                 for item in getattr(self, key):
                     #ret_data[key].append(item.serialize())
                     ret_data[key].append(getattr(item,"id"))
             else:
-                if self.__mapper__.relationships[key].query_class is not None:
+                if self.__mapper__.relationships[key].query_class is not None:    #not quite sure under what condition will .query_class return not None.
+                    print(self.__mapper__.relationships[key].query_class)
                     #ret_data[key] = getattr(self, key).serialize()
                     ret_data[key] = getattr(getattr(self, key),"id")
                 else:
-                    ret_data[key] = getattr(getattr(self, key),"id")
+                    item = getattr(self, key)                                   #the two relationships "categoryRecord" and "supplieRecord" will execute this block". Since we don't have any entries in Suppliers and Categories. We need to add this logical operation here.
+                    ret_data[key] = getattr(item,"id") if item else ''
 
         return ret_data
 
@@ -61,7 +66,7 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
     id = db.Column(db.Integer, primary_key = True)
     lastUpdateDate = db.Column(db.String)
     asin = db.Column(db.String)
-    supplier = db.Column(db.String, nullable=False)
+    supplier = db.Column(db.String)    #copy from the inventory record, can not be edited
     sellerSKU = db.Column(db.String)
     orderItemId = db.Column(db.String)
     title = db.Column(db.String)
@@ -75,21 +80,13 @@ class Orderitems(SerializableModel):     # the class name must not be "OrderItem
     giftWrapTax = db.Column(db.Float)
     shippingDiscount = db.Column(db.Float)
     promotionDiscount = db.Column(db.Float)
-    category = db.Column(db.String)
-    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))  #"inventory" must be lower case
+    category = db.Column(db.String)      #copy from the inventory record, can not be edited
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id', onupdate="CASCADE", ondelete="SET NULL"))  #"inventory" must be lower case
     profit = db.Column(db.Float)
     '''
     def __repr__(self):
         return '<OrderItem %r>' % (self.title)
     '''
-
-    @property
-    def serialization(self):
-        result = {}
-        for f in inspect(Orderitems).attrs:
-            if f.key == 'inventory_id':
-                result[f.key] = self.inventoryrecord.id
-            result[f.key] = getattr(self, f.key)
 
 
 class Inventory(SerializableModel):
@@ -98,14 +95,14 @@ class Inventory(SerializableModel):
 
     id = db.Column(db.Integer, primary_key = True)
     asin = db.Column(db.String)
-    supplier = db.Column(db.String)
+    supplier = db.Column(db.String, db.ForeignKey('suppliers.name', onupdate="CASCADE", ondelete="SET NULL"))
     sellerSKU = db.Column(db.String, nullable=False)
     fnsku = db.Column(db.String, nullable=False)
     condition = db.Column(db.String)
     totalSupplyQuantity = db.Column(db.Integer)
     inStockSupplyQuantity = db.Column(db.Integer)
     costEach = db.Column(db.Float)
-    category = db.Column(db.String)
+    category = db.Column(db.String, db.ForeignKey('categories.name', onupdate="CASCADE", ondelete="SET NULL"))
     orderQuantity = db.Column(db.Integer)
     orders = db.relationship('Orderitems', backref='inventoryRecord', lazy='dynamic')
 
@@ -117,14 +114,17 @@ class Inventory(SerializableModel):
 class Categories(SerializableModel):
     __searchable__ = ['name']
 
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True)
+    # this backref cant be named the same as "category" because Inventory already has this column
+    inventories = db.relationship('Inventory', backref='categoryRecord', lazy='dynamic')
 
 class Suppliers(SerializableModel):
     __searchable__ = ['name']
 
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True)
+    inventories = db.relationship('Inventory', backref='supplierRecord', lazy='dynamic')
 '''
 if enable_search:
     wa.whoosh_index(app, Orderitems)
