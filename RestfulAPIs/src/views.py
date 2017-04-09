@@ -151,13 +151,11 @@ def deleteInventory():
 '''
 
 @app.route('/api/v1.0/orders', methods=['GET'])
-@app.route('/api/v1.0/inventories/<int:inventory_id>/orders', methods=['GET'])
 #@login_required
-def listOrders(inventory_id=None):
+def listOrders():
     '''Search orders, if no search criterion is provided, return all orders
-    params:
-    - inventory_id: int
     query:
+    - inventory_id: int
     - page: int
     - per:  int
     - lastUpdateDateAfter: text of a date like "2016-09-21T02:14:37Z"
@@ -171,6 +169,7 @@ def listOrders(inventory_id=None):
     page = int(request.args.get('page', 1))
     per = int(request.args.get('per', ENTRIES_PER_PAGE))
 
+    inventory_id = request.args.get('inventory_id', '')
     lastUpdateDateAfter = request.args.get('lastUpdateDateAfter', '')
     category = request.args.get('category','').encode('ascii', 'ignore')
     supplier = request.args.get('supplier', '').encode('ascii', 'ignore')
